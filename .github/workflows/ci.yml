@@ -39,6 +39,7 @@ jobs:
               echo "=== Running $c ==="
               BASENAME=$(basename "$c" .postman_collection.json)
               newman run "$c" \
+                newman run postman/nasa-openapis.postman_collection.json \
                 -e postman/nasa-env.postman_environment.json \
                 --env-var "baseUrl=https://api.nasa.gov" \
                 --env-var "api_key=${{ secrets.NASA_API_KEY }}" \
