@@ -1,43 +1,27 @@
-name: API tests (Newman)
+- name: Run API tests (main)
+  run: |
+    mkdir -p reports
+    newman run postman/nasa-openapis-fixed.postman_collection.json \
+      -e postman/nasa-env.postman_environment.json \
+      --env-var "baseUrl=https://api.nasa.gov" \
+      --env-var "api_key=${{ secrets.NASA_API_KEY }}" \
+      --reporters cli,htmlextra \
+      --reporter-htmlextra-export reports/newman.html
 
-on:
-  push:
-  pull_request:
-  workflow_dispatch:   # allow manual runs
-  schedule:
-    - cron: "0 6 * * *"   # optional: daily 06:00 UTC
+- name: Run API tests (extras)
+  run: |
+    newman run postman/nasa-extras.postman_collection.json \
+      -e postman/nasa-env.postman_environment.json \
+      --env-var "baseUrl=https://api.nasa.gov" \
+      --env-var "api_key=${{ secrets.NASA_API_KEY }}" \
+      --reporters cli,htmlextra \
+      --reporter-htmlextra-export reports/newman-extras.html
 
-jobs:
-  newman:
-    runs-on: ubuntu-latest
+- name: Upload reports
+  uses: actions/upload-artifact@v4
+  with:
+    name: newman-reports
+    path: |
+      reports/newman.html
+      reports/newman-extras.html
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install Newman
-        run: |
-          npm i -g newman newman-reporter-htmlextra
-
-      - name: Run API tests
-        run: |
-          mkdir -p reports
-          newman run postman/nasa-openapis.postman_collection.json \
-            -e postman/nasa-env.postman_environment.json \
-            --env-var "baseUrl=https://api.nasa.gov" \
-            --env-var "api_key=${{ secrets.NASA_API_KEY }}" \
-            --reporters cli,htmlextra \
-            --reporter-htmlextra-export reports/newman.html
-
-      - name: Upload report artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: newman-report
-          path: reports/newman.html
-          if-no-files-found: error
