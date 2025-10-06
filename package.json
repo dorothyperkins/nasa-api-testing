@@ -1,0 +1,13 @@
+{
+  "name": "nasa-api-testing",
+  "version": "1.0.0",
+  "private": true,
+  "description": "API testing demo for NASA Open APIs using Postman + Newman",
+  "scripts": {
+    "test:api": "newman run postman/nasa-openapis.postman_collection.json -e postman/nasa-env.postman_environment.json --reporters cli,htmlextra --reporter-htmlextra-export reports/newman.html"
+  },
+  "devDependencies": {
+    "newman": "^6.1.0",
+    "newman-reporter-htmlextra": "^1.23.1"
+  }
+}
