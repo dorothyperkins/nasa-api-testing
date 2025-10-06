@@ -62,6 +62,4 @@ To enable:
 - Add a short screencast showing `npm run test:api` and a quick look at the report.
 - In your CV/README: “Built a Postman collection + Newman CI pipeline validating NASA Open APIs with dynamic date handling, positive & negative tests, and HTML reporting.”
 
----
 
-Happy testing! 🚀
