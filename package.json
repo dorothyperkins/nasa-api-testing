@@ -4,7 +4,10 @@
   "private": true,
   "description": "API testing demo for NASA Open APIs using Postman + Newman",
   "scripts": {
-    "test:api": "newman run postman/nasa-openapis.postman_collection.json -e postman/nasa-env.postman_environment.json --reporters cli,htmlextra --reporter-htmlextra-export reports/newman.html"
+    "test:api": "newman run postman/nasa-openapis.postman_collection.json -e postman/nasa-env.postman_environment.json --env-var \"baseUrl=https://api.nasa.gov\" --env-var \"api_key=${NASA_API_KEY}\" --reporters cli,htmlextra --reporter-htmlextra-export reports/newman.html",
+    "test:extras": "newman run postman/nasa-extras.postman_collection.json -e postman/nasa-env.postman_environment.json --reporters cli,htmlextra --reporter-htmlextra-export reports/newman-extras.html",
+    "test:donki": "newman run postman/nasa-donki-extras.postman_collection.json -e postman/nasa-env.postman_environment.json --reporters cli,htmlextra --reporter-htmlextra-export reports/newman-donki-extras.html",
+    "test:all": "mkdir -p reports && npm run -s test:api && npm run -s test:extras && npm run -s test:donki"
   },
   "devDependencies": {
     "newman": "^6.1.0",
