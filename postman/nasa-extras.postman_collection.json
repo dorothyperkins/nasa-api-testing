@@ -1,0 +1,116 @@
+{
+  "info": {
+    "_postman_id": "c5a0c3f2-0e9b-44a1-92b1-epic-donki",
+    "name": "NASA Extras – EPIC Archive + DONKI FLR",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Adds EPIC archive-by-date and DONKI Solar Flares endpoints with assertions."
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "function fmt(d){ return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10); }",
+          "const DAY = 24*60*60*1000;",
+          "",
+          "// Default EPIC archive date: two days ago (UTC)",
+          "if (!pm.environment.get(\"epic_date\")) {",
+          "  const d = new Date(Date.now() - 2*DAY);",
+          "  pm.environment.set(\"epic_date\", fmt(d));",
+          "}",
+          "",
+          "// Default DONKI window: last 7 days ending two days ago (UTC)",
+          "if (!pm.environment.get(\"donki_start\") || !pm.environment.get(\"donki_end\")) {",
+          "  const end = new Date(Date.now() - 2*DAY);",
+          "  const start = new Date(end.getTime() - 7*DAY);",
+          "  pm.environment.set(\"donki_start\", fmt(start));",
+          "  pm.environment.set(\"donki_end\", fmt(end));",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "EPIC – Archive by Date (metadata)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/EPIC/api/natural/date/{{epic_date}}?api_key={{api_key}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["EPIC", "api", "natural", "date", "{{epic_date}}"],
+          "query": [
+            { "key": "api_key", "value": "{{api_key}}" }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200 (EPIC archive by date)\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "var epicList = pm.response.json();",
+              "pm.test(\"Response is array (may be empty)\", function () {",
+              "  pm.expect(Array.isArray(epicList)).to.be.true;",
+              "});",
+              "if ((epicList||[]).length > 0) {",
+              "  var item = epicList[0];",
+              "  pm.test(\"Item has image, date, and centroid_coordinates\", function () {",
+              "    pm.expect(item).to.have.property(\"image\");",
+              "    pm.expect(item).to.have.property(\"date\");",
+              "    pm.expect(item).to.have.property(\"centroid_coordinates\");",
+              "  });",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "DONKI – Solar Flares (FLR)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/DONKI/FLR?startDate={{donki_start}}&endDate={{donki_end}}&api_key={{api_key}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["DONKI", "FLR"],
+          "query": [
+            { "key": "startDate", "value": "{{donki_start}}" },
+            { "key": "endDate", "value": "{{donki_end}}" },
+            { "key": "api_key", "value": "{{api_key}}" }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200 (DONKI FLR)\", function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "var flares = pm.response.json();",
+              "pm.test(\"Response is array (may be empty)\", function () {",
+              "  pm.expect(Array.isArray(flares)).to.be.true;",
+              "});",
+              "if ((flares||[]).length > 0) {",
+              "  var f = flares[0];",
+              "  pm.test(\"Flare has required fields\", function () {",
+              "    pm.expect(f).to.have.property(\"flrID\");",
+              "    pm.expect(f).to.have.property(\"beginTime\");",
+              "    pm.expect(f).to.have.property(\"classType\");",
+              "  });",
+              "}"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
