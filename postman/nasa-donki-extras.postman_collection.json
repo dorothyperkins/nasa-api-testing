@@ -1,0 +1,240 @@
+{
+  "info": {
+    "_postman_id": "2db0b9e1-6c81-49b3-9c4b-donki-extras",
+    "name": "NASA DONKI Extras \u2014 CME, GST, RBE, Notifications",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Additional DONKI endpoints with assertions and JSON Schema validation."
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "function fmt(d){ return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10); }",
+          "const DAY = 24*60*60*1000;",
+          "if (!pm.environment.get(\"donki_start\") || !pm.environment.get(\"donki_end\")) {",
+          "  const end = new Date(Date.now() - 2*DAY);",
+          "  const start = new Date(end.getTime() - 7*DAY);",
+          "  pm.environment.set(\"donki_start\", fmt(start));",
+          "  pm.environment.set(\"donki_end\", fmt(end));",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "DONKI \u2013 CME",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/DONKI/CME?startDate={{donki_start}}&endDate={{donki_end}}&api_key={{api_key}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "DONKI",
+            "CME"
+          ],
+          "query": [
+            {
+              "key": "startDate",
+              "value": "{{donki_start}}"
+            },
+            {
+              "key": "endDate",
+              "value": "{{donki_end}}"
+            },
+            {
+              "key": "api_key",
+              "value": "{{api_key}}"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+              "var arr = pm.response.json();",
+              "pm.test(\"Response is an array\", function () { pm.expect(Array.isArray(arr)).to.be.true; });",
+              "",
+              "// JSON Schema for DONKI CME",
+              "var cmeSchema = {\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"array\", \"items\": {\"type\": \"object\", \"anyOf\": [{\"required\": [\"activityID\"]}, {\"required\": [\"startTime\"]}], \"properties\": {\"activityID\": {\"type\": [\"string\", \"null\"]}, \"startTime\": {\"type\": [\"string\", \"null\"]}, \"sourceLocation\": {\"type\": [\"string\", \"null\"]}, \"instruments\": {\"type\": [\"array\", \"null\"]}, \"link\": {\"type\": [\"string\", \"null\"]}}, \"additionalProperties\": true}};",
+              "var data = pm.response.json();",
+              "pm.test(\"DONKI CME matches schema\", function () {",
+              "  var res = tv4.validateResult(data, cmeSchema);",
+              "  if (!res.valid) console.log(\"DONKI CME schema error:\", res.error);",
+              "  pm.expect(res.valid, JSON.stringify(res.error)).to.be.true;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "DONKI \u2013 Geomagnetic Storm (GST)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/DONKI/GST?startDate={{donki_start}}&endDate={{donki_end}}&api_key={{api_key}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "DONKI",
+            "GST"
+          ],
+          "query": [
+            {
+              "key": "startDate",
+              "value": "{{donki_start}}"
+            },
+            {
+              "key": "endDate",
+              "value": "{{donki_end}}"
+            },
+            {
+              "key": "api_key",
+              "value": "{{api_key}}"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+              "var arr = pm.response.json();",
+              "pm.test(\"Response is an array\", function () { pm.expect(Array.isArray(arr)).to.be.true; });",
+              "",
+              "// JSON Schema for DONKI GST",
+              "var gstSchema = {\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"array\", \"items\": {\"type\": \"object\", \"anyOf\": [{\"required\": [\"startTime\"]}, {\"required\": [\"gstID\"]}], \"properties\": {\"gstID\": {\"type\": [\"string\", \"number\", \"null\"]}, \"startTime\": {\"type\": [\"string\", \"null\"]}, \"allKpIndex\": {\"type\": [\"array\", \"null\"]}}, \"additionalProperties\": true}};",
+              "var data = pm.response.json();",
+              "pm.test(\"DONKI GST matches schema\", function () {",
+              "  var res = tv4.validateResult(data, gstSchema);",
+              "  if (!res.valid) console.log(\"DONKI GST schema error:\", res.error);",
+              "  pm.expect(res.valid, JSON.stringify(res.error)).to.be.true;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "DONKI \u2013 Radiation Belt Enhancement (RBE)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/DONKI/RBE?startDate={{donki_start}}&endDate={{donki_end}}&api_key={{api_key}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "DONKI",
+            "RBE"
+          ],
+          "query": [
+            {
+              "key": "startDate",
+              "value": "{{donki_start}}"
+            },
+            {
+              "key": "endDate",
+              "value": "{{donki_end}}"
+            },
+            {
+              "key": "api_key",
+              "value": "{{api_key}}"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+              "var arr = pm.response.json();",
+              "pm.test(\"Response is an array\", function () { pm.expect(Array.isArray(arr)).to.be.true; });",
+              "",
+              "// JSON Schema for DONKI RBE",
+              "var rbeSchema = {\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"array\", \"items\": {\"type\": \"object\", \"anyOf\": [{\"required\": [\"rbeID\"]}, {\"required\": [\"eventTime\"]}, {\"required\": [\"startTime\"]}], \"properties\": {\"rbeID\": {\"type\": [\"string\", \"number\", \"null\"]}, \"eventTime\": {\"type\": [\"string\", \"null\"]}, \"startTime\": {\"type\": [\"string\", \"null\"]}}, \"additionalProperties\": true}};",
+              "var data = pm.response.json();",
+              "pm.test(\"DONKI RBE matches schema\", function () {",
+              "  var res = tv4.validateResult(data, rbeSchema);",
+              "  if (!res.valid) console.log(\"DONKI RBE schema error:\", res.error);",
+              "  pm.expect(res.valid, JSON.stringify(res.error)).to.be.true;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "DONKI \u2013 Notifications",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/DONKI/notifications?startDate={{donki_start}}&endDate={{donki_end}}&type=all&api_key={{api_key}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "DONKI",
+            "notifications"
+          ],
+          "query": [
+            {
+              "key": "startDate",
+              "value": "{{donki_start}}"
+            },
+            {
+              "key": "endDate",
+              "value": "{{donki_end}}"
+            },
+            {
+              "key": "type",
+              "value": "all"
+            },
+            {
+              "key": "api_key",
+              "value": "{{api_key}}"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+              "var arr = pm.response.json();",
+              "pm.test(\"Response is an array\", function () { pm.expect(Array.isArray(arr)).to.be.true; });",
+              "",
+              "// JSON Schema for DONKI Notifications",
+              "var notifSchema = {\"$schema\": \"http://json-schema.org/draft-04/schema#\", \"type\": \"array\", \"items\": {\"type\": \"object\", \"anyOf\": [{\"required\": [\"messageType\"]}, {\"required\": [\"messageIssueTime\"]}, {\"required\": [\"messageBody\"]}], \"properties\": {\"messageType\": {\"type\": [\"string\", \"null\"]}, \"messageIssueTime\": {\"type\": [\"string\", \"null\"]}, \"messageURL\": {\"type\": [\"string\", \"null\"]}, \"messageBody\": {\"type\": [\"string\", \"null\"]}}, \"additionalProperties\": true}};",
+              "var data = pm.response.json();",
+              "pm.test(\"DONKI Notifications matches schema\", function () {",
+              "  var res = tv4.validateResult(data, notifSchema);",
+              "  if (!res.valid) console.log(\"DONKI Notifications schema error:\", res.error);",
+              "  pm.expect(res.valid, JSON.stringify(res.error)).to.be.true;",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
